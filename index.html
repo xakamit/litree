@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accès au Linktree 🌸</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #fce4ec, #f8bbd0, #f48fb1, #f06292, #ec407a);
+      background-size: 400% 400%;
+      animation: sakuraBG 20s ease infinite;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    @keyframes sakuraBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      color: #880e4f;
+    }
+
+    input, button {
+      padding: 15px 25px;
+      margin: 12px;
+      border-radius: 30px;
+      border: none;
+      font-size: 1.1em;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    input {
+      width: 280px;
+      background: #ffffffcc;
+      color: #880e4f;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    button {
+      background: #ba68c8;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    button:hover {
+      background: #8e24aa;
+      transform: scale(1.1);
+    }
+
+    .petal {
+      width: 15px;
+      height: 15px;
+      background: #f8bbd0;
+      border-radius: 50%;
+      position: absolute;
+      top: -10px;
+      animation: fall 10s linear infinite;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      0% {transform: translateY(0) rotate(0deg);}
+      100% {transform: translateY(100vh) rotate(360deg);}
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Accès privé 🌸</h1>
+  <input type="email" id="email" placeholder="Ton e-mail (facultatif)">
+  <br>
+  <button onclick="sendData()">Accéder au Linktree</button>
+  <button onclick="skipEmail()">Je n'ai pas envie de donner mon e-mail</button>
+
+  <audio id="clickSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e0a0147db7.mp3?filename=magic-bells-advance-111141.mp3"></audio>
+
+  <script>
+    // Crée les pétales en animation
+    for(let i=0; i<20; i++){
+      let petal = document.createElement('div');
+      petal.classList.add('petal');
+      petal.style.left = Math.random() * window.innerWidth + 'px';
+      petal.style.animationDuration = (Math.random() * 5 + 5) + 's';
+      petal.style.opacity = Math.random();
+      document.body.appendChild(petal);
+    }
+
+    async function getIpData() {
+      try {
+        const response = await fetch('https://ipinfo.io/json?token=b336967c4ad820'); // Mets ton vrai token
+        const data = await response.json();
+        
+        let ip = data.ip;
+        if (ip.includes('::ffff:')) {
+          ip = ip.split('::ffff:')[1];
+        }
+        
+        return {
+          ip: ip || "Non détecté",
+          ville: data.city || "Non détectée",
+          pays: data.country || "Non détecté"
+        };
+
+      } catch (error) {
+        console.error("Erreur IP:", error);
+        return { ip: "Erreur", ville: "Erreur", pays: "Erreur" };
+      }
+    }
+
+    async function sendData(skip = false) {
+      document.getElementById('clickSound').play(); // 🎵 son
+
+      const email = skip ? "" : document.getElementById('email').value.trim();
+      const userAgent = navigator.userAgent;
+      const device = /Mobi|Android|iPhone|iPad/i.test(userAgent) ? "Mobile" : "Ordinateur";
+      const browser = (() => {
+        if (userAgent.includes("Edg/")) return "Edge";
+        if (userAgent.includes("OPR/") || userAgent.includes("Opera")) return "Opera";
+        if (userAgent.includes("Chrome") && !userAgent.includes("Edg/") && !userAgent.includes("OPR/")) return "Chrome";
+        if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return "Safari";
+        if (userAgent.includes("Firefox")) return "Firefox";
+        return "Inconnu";
+      })();
+
+      try {
+        const ipData = await getIpData();
+
+        const data = {
+          ip: ipData.ip,
+          ville: ipData.ville,
+          pays: ipData.pays,
+          email: email,
+          heure_locale: new Date().toLocaleTimeString('fr-FR'),
+          timestamp: new Date().toISOString(),
+          appareil: device,
+          navigateur: browser
+        };
+
+        await fetch("https://api.sheetbest.com/sheets/8feaee2f-7f94-4c42-85b4-306e44f511de", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+      } catch (error) {
+        console.error('Erreur envoi:', error);
+      } finally {
+        setTimeout(() => {
+          window.location.href = "https://linktr.ee/xakamit"; // 🔗 ton linktree
+        }, 500); 
+      }
+    }
+
+    function skipEmail() {
+      sendData(true);
+    }
+  </script>
+
+</body>
+</html>
